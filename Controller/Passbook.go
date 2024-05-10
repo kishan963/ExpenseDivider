@@ -1,6 +1,7 @@
 package controller
 
 import (
+	"fmt"
 	"log"
 
 	d "github.com/kishan963/Splitwise/Database"
@@ -18,13 +19,25 @@ func GetUserBalance(Id int) []m.Balance {
 }
 
 func SortUserBalance(balances []m.Balance, Id int) []m.Balance {
+	fmt.Println(balances)
+	for j, v := range balances {
+		if v.For_user == Id && v.Amount > 0 {
+			for i, u := range balances {
+				if u.For_user == Id && u.By_user == v.By_user && i > j {
+					balances[j].Amount += u.Amount
+					balances[i].Amount = 0
+				}
+			}
+
+		}
+	}
 
 	for j, v := range balances {
-		if v.For_user == Id {
+		if v.By_user == Id && v.Amount > 0 {
 			for i, u := range balances {
-				if u.For_user == v.By_user {
-					balances[i].Amount -= v.Amount
-					balances[j].Amount = 0
+				if u.By_user == Id && u.For_user == v.For_user && i > j {
+					balances[j].Amount += u.Amount
+					balances[i].Amount = 0
 				}
 			}
 
@@ -34,7 +47,7 @@ func SortUserBalance(balances []m.Balance, Id int) []m.Balance {
 	var updated_balance []m.Balance
 
 	for _, v := range balances {
-		if v.Amount != 0 {
+		if v.Amount != 0 && v.By_user != v.For_user {
 			updated_balance = append(updated_balance, v)
 		}
 	}
