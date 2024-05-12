@@ -29,3 +29,27 @@ func GetUserGroups(data m.User) ([]m.Group, error) {
 	groups = append(groups, user.Groups...)
 	return groups, nil
 }
+
+func DeleteGroup(data m.Group) {
+	// fmt.Println("Group Id Delete ", data)
+	// d.Db.Where("Id = ?", data.Id).Delete(&data)
+
+	var group m.Group
+	if err := d.Db.Preload("Expenses").First(&group, data.Id).Error; err != nil {
+		return // return error if expense is not found or any other error occurs
+	}
+
+	for _, v := range group.Expenses {
+		DeleteExpense(v)
+	}
+
+	// Step 2: Remove association from user_expense table
+	if err := d.Db.Model(&group).Association("Users").Clear(); err != nil {
+		return // return error if clearing association fails
+	}
+
+	// Step 3: Delete the expense
+	if err := d.Db.Delete(&group).Error; err != nil {
+		return // return error if deletion fails
+	}
+}

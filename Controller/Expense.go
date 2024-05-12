@@ -42,3 +42,23 @@ func UpdateBalance(data m.Expense) {
 	}
 
 }
+
+func DeleteExpense(data m.Expense) {
+	// d.Db.Where("Id = ?", data.Id).Delete(&data)
+	var balance m.Balance
+	d.Db.Where("Expenseid = ?", data.Id).Delete(&balance)
+	var expense m.Expense
+	if err := d.Db.First(&expense, data.Id).Error; err != nil {
+		return // return error if expense is not found or any other error occurs
+	}
+
+	// Step 2: Remove association from user_expense table
+	if err := d.Db.Model(&expense).Association("Users").Clear(); err != nil {
+		return // return error if clearing association fails
+	}
+
+	// Step 3: Delete the expense
+	if err := d.Db.Delete(&expense).Error; err != nil {
+		return // return error if deletion fails
+	}
+}

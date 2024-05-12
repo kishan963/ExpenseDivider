@@ -25,6 +25,8 @@ func main() {
 	r.HandleFunc("/getGroup", GetGroupHandler).Methods("POST")
 	r.HandleFunc("/getUserBalance", BalanceHandler).Methods("POST")
 	r.HandleFunc("/getUserGroups", GetuserGroupsHandler).Methods("POST")
+	r.HandleFunc("/deleteGroup", DeleteGroupHandler).Methods("POST")
+	r.HandleFunc("/deleteExpense", DeleteExpenseHandler).Methods("POST")
 	err := d.DbSetup()
 	if err != nil {
 		fmt.Println("Error in db creation ", err)
@@ -206,5 +208,43 @@ func GetuserGroupsHandler(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(http.StatusOK)
 	w.Write(jsonData)
+
+}
+
+func DeleteGroupHandler(w http.ResponseWriter, r *http.Request) {
+	if _, err := j.IsAuthorized(w, r); err != nil {
+		http.Error(w, "Authentication failed: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	var data m.Group
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	c.DeleteGroup(data)
+
+	// Set response content type
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
+
+}
+
+func DeleteExpenseHandler(w http.ResponseWriter, r *http.Request) {
+	if _, err := j.IsAuthorized(w, r); err != nil {
+		http.Error(w, "Authentication failed: "+err.Error(), http.StatusInternalServerError)
+		return
+	}
+	var data m.Expense
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	c.DeleteExpense(data)
+
+	// Set response content type
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(http.StatusOK)
 
 }

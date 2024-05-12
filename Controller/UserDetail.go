@@ -28,7 +28,3 @@ func GetSingleUser() []m.User {
 	}
 	return users
 }
-
-func DeleteExpense() {
-	fmt.Println("Registation started")
-}
