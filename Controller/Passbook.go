@@ -4,18 +4,24 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/jinzhu/copier"
 	d "github.com/kishan963/Splitwise/Database"
+	dto "github.com/kishan963/Splitwise/Dto"
 	m "github.com/kishan963/Splitwise/Models"
 )
 
-func GetUserBalance(Id int) []m.Balance {
+func GetUserBalance(data m.Expense) []dto.ResponseDto {
 	var balances []m.Balance
-
+	var responseDto []dto.ResponseDto
 	// Retrieve all data from the users table
-	if err := d.Db.Where("for_user = ? OR 	by_user = ?", Id, Id).Find(&balances).Error; err != nil {
+	if err := d.Db.Where("group_id = ? AND (for_user = ? OR by_user = ?)", data.GroupId, data.Id, data.Id).Find(&balances).Error; err != nil {
 		log.Fatal(err)
 	}
-	return SortUserBalance(balances, Id)
+	balances = SortUserBalance(balances, data.Id)
+	copier.Copy(&responseDto, &balances)
+	responseDto = SetUserName(responseDto)
+	return responseDto
+
 }
 
 func SortUserBalance(balances []m.Balance, Id int) []m.Balance {
@@ -52,4 +58,20 @@ func SortUserBalance(balances []m.Balance, Id int) []m.Balance {
 		}
 	}
 	return updated_balance
+}
+
+func SetUserName(responseDto []dto.ResponseDto) []dto.ResponseDto {
+	var user []m.User
+	user = GetAllUser()
+
+	userMap := make(map[int]string)
+	for _, u := range user {
+		userMap[u.Id] = u.Username
+	}
+
+	for i, v := range responseDto {
+		responseDto[i].By_user_name = userMap[v.By_user]
+		responseDto[i].For_user_name = userMap[v.For_user]
+	}
+	return responseDto
 }

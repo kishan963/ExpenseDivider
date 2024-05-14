@@ -165,15 +165,19 @@ func GetGroupHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func BalanceHandler(w http.ResponseWriter, r *http.Request) {
-	User_id, err := j.IsAuthorized(w, r)
-	if err != nil {
+	if _, err := j.IsAuthorized(w, r); err != nil {
 		http.Error(w, "Authentication failed: "+err.Error(), http.StatusInternalServerError)
 		return
 	}
-	fmt.Println("UserIDD ", User_id)
-	group := c.GetUserBalance(User_id)
+	var data m.Expense
+	err := json.NewDecoder(r.Body).Decode(&data)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+	balance := c.GetUserBalance(data)
 	// Convert users slice to JSON
-	jsonData, err := json.Marshal(group)
+	jsonData, err := json.Marshal(balance)
 	if err != nil {
 		http.Error(w, "Error encoding JSON", http.StatusInternalServerError)
 		return

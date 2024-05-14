@@ -23,6 +23,7 @@ func UpdateBalance(data m.Expense) {
 				Expenseid: data.Id,
 				By_user:   data.PaidBy_User,
 				For_user:  v.Id,
+				Group_Id:  data.GroupId,
 				Amount:    data.Amount / float64(len(data.Users)),
 			}
 			fmt.Println("Updatebalance ", result)
