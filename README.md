@@ -32,5 +32,5 @@ You should have basic knowledge of Go language like data types, if-else statemen
 ## Live Demo
 
 Check out the live demo of the application [here](https://expense-divider-ui.vercel.app/).
-# note - 
+ **note** - 
 Please wait for 2 min for backend application to start. It is deployed on render which close the application when it is idle.
